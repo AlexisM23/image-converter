@@ -86,7 +86,7 @@ image-converter/
 
 1. **Clona el repositorio:**
    ```bash
-   git clone https://github.com/tu-usuario/image-converter.git
+   git clone https://github.com/AlexisM23/image-converter.git
    cd image-converter
    ```
 
