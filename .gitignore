@@ -1,0 +1,40 @@
+# Dependencias
+node_modules/
+
+# Build de producción
+dist/
+
+# Archivos de entorno
+.env
+.env.* 
+
+# Archivos temporales y de cache
+.cache/
+.tmp/
+*.tmp
+
+# Archivos de logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Salida de pruebas y cobertura
+coverage/
+
+# Archivos de lock alternativos
+yarn.lock
+pnpm-lock.yaml
+
+# Archivos de Vite
+.vite/
+
+# Archivos de configuración de editores
+*.swp
+*.swo
+.idea/
+.vscode/
