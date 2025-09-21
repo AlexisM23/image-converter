@@ -539,7 +539,9 @@ const eventHandlers = {
         </div>
       </div>
     `;
+    console.log('### MODAL ABOUT TO BE APPENDED');
     document.body.appendChild(modal);
+    console.log('### MODAL APPENDED');
     await this.initToastImageEditor(fileIndex, imageUrl, state, elements);
   },
 

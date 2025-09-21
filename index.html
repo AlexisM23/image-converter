@@ -5,25 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Convertidor de imágenes online - Convierte imágenes a múltiples formatos con configuraciones avanzadas">
   <meta name="theme-color" content="#3b82f6">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://uicdn.toast.com; style-src 'self' 'unsafe-inline' https://uicdn.toast.com data:; img-src 'self' data: blob: https://uicdn.toast.com; connect-src 'self' blob: data:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' data:; img-src 'self' data: blob: https://uicdn.toast.com; connect-src 'self' blob: data:;">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
   
   <title>Convertidor de Imágenes</title>
-  <link rel="stylesheet" href="/src/style.css">
-  <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css">
+  <link rel="stylesheet" href="src/style.css">
+  <link rel="stylesheet" href="public/vendor/tui/tui-image-editor.css">
   <!-- Dependencias de TOAST UI -->
-  <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.min.js"></script>
-  <script src="https://uicdn.toast.com/tui-color-picker/latest/tui-color-picker.min.js"></script>
-  <script src="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.js"></script>
+  <script src="public/vendor/tui/tui-code-snippet.min.js"></script>
+  <script src="public/vendor/tui/tui-color-picker.min.js"></script>
+  <script src="public/vendor/tui/tui-image-editor.js"></script>
   <script>
-    // Deshabilitar estadísticas de uso para evitar problemas de CORS
-    if (typeof tui !== 'undefined') {
+    // Deshabilitar estadísticas de uso y verificar carga de TUI
+    if (typeof tui === 'undefined' || typeof tui.ImageEditor === 'undefined') {
+      throw new Error('FATAL: TOAST UI Image Editor (tui) no se ha cargado.');
+    } else {
       tui.usageStatistics = false;
     }
   </script>
@@ -159,6 +161,6 @@
       </div>
     </div>
   </div>
-  <script type="module" src="/src/script.js"></script>
+  <script type="module" src="src/script.js"></script>
 </body>
 </html>
