@@ -67,7 +67,8 @@ class EditorModal {
      * @returns {string} - Clases CSS
      */
     getModalClasses() {
-        return 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden transform scale-95 transition-transform duration-300 ease-in-out';
+        return 'bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-h-[95vh] overflow-hidden transform scale-95 transition-transform duration-300 ease-in-out ' +
+               'max-w-xs sm:max-w-sm md:max-w-2xl lg:max-w-4xl xl:max-w-6xl';
     }
 
     /**
@@ -106,11 +107,10 @@ class EditorModal {
      */
     createSaveButton() {
         const saveButton = document.createElement('button');
-        saveButton.className = 'inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200';
-        saveButton.innerHTML = `
-            ${IconLibrary.getIcon('save', 20, 'mr-2')}
-            Guardar
-        `;
+        saveButton.className = 'inline-flex items-center justify-center w-10 h-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200';
+        saveButton.innerHTML = IconLibrary.getIcon('save', 20);
+        saveButton.setAttribute('title', 'Guardar cambios');
+        saveButton.setAttribute('aria-label', 'Guardar cambios');
         saveButton.addEventListener('click', this.handleSave.bind(this));
         return saveButton;
     }
@@ -123,6 +123,8 @@ class EditorModal {
         const closeButton = document.createElement('button');
         closeButton.className = 'inline-flex items-center justify-center w-10 h-10 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200';
         closeButton.innerHTML = IconLibrary.getIcon('close', 24);
+        closeButton.setAttribute('title', 'Cerrar editor');
+        closeButton.setAttribute('aria-label', 'Cerrar editor');
         closeButton.addEventListener('click', this.handleClose.bind(this));
         return closeButton;
     }
@@ -133,13 +135,13 @@ class EditorModal {
      */
     createContent() {
         const content = document.createElement('div');
-        content.className = 'flex flex-col lg:flex-row h-full';
+        content.className = 'flex flex-col h-full lg:flex-row lg:min-h-[70vh]';
 
-        // Canvas area
-        const canvasArea = this.createCanvasArea();
+        // Canvas area responsivo
+        const canvasArea = this.createResponsiveCanvasArea();
         
-        // Filters panel
-        const filtersPanel = this.createFiltersPanel();
+        // Filters panel responsivo
+        const filtersPanel = this.createResponsiveFiltersPanel();
 
         content.appendChild(canvasArea);
         content.appendChild(filtersPanel);
@@ -148,19 +150,22 @@ class EditorModal {
     }
 
     /**
-     * Crear área del canvas
+     * Crear área del canvas responsivo
      * @returns {HTMLElement} - Área del canvas
      */
-    createCanvasArea() {
+    createResponsiveCanvasArea() {
         const area = document.createElement('div');
-        area.className = 'flex-1 p-6 flex items-center justify-center bg-gray-50 dark:bg-gray-800';
+        area.className = 'flex-1 p-2 sm:p-4 lg:p-6 flex items-center justify-center ' +
+                        'bg-gray-50 dark:bg-gray-800 min-h-[40vh] lg:min-h-[60vh]';
 
         const canvasContainer = document.createElement('div');
-        canvasContainer.className = 'relative bg-white rounded-lg shadow-lg p-4';
+        canvasContainer.className = 'relative bg-white rounded-lg shadow-lg p-2 sm:p-4 ' +
+                                   'w-full max-w-full';
 
         const canvas = document.createElement('canvas');
         canvas.id = 'image-editor-canvas';
-        canvas.className = 'max-w-full max-h-[60vh] object-contain';
+        canvas.className = 'max-w-full max-h-full object-contain ' +
+                          'max-h-[35vh] sm:max-h-[45vh] lg:max-h-[55vh]';
 
         canvasContainer.appendChild(canvas);
         area.appendChild(canvasContainer);
@@ -169,25 +174,44 @@ class EditorModal {
     }
 
     /**
-     * Crear panel de filtros
+     * Crear área del canvas (método legacy - mantener para compatibilidad)
+     * @returns {HTMLElement} - Área del canvas
+     */
+    createCanvasArea() {
+        return this.createResponsiveCanvasArea();
+    }
+
+    /**
+     * Crear panel de filtros responsivo
      * @returns {HTMLElement} - Panel de filtros
      */
-    createFiltersPanel() {
+    createResponsiveFiltersPanel() {
         const panel = document.createElement('div');
-        panel.className = 'w-full lg:w-80 bg-gray-50 dark:bg-gray-800 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 p-6 overflow-y-auto';
+        panel.className = 'w-full lg:w-80 bg-gray-50 dark:bg-gray-800 ' +
+                         'border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 ' +
+                         'p-3 sm:p-4 lg:p-6 overflow-y-auto ' +
+                         'max-h-[40vh] lg:max-h-none';
 
         const title = document.createElement('h3');
-        title.className = 'text-lg font-semibold text-gray-900 dark:text-white mb-4';
+        title.className = 'text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4';
         title.textContent = 'Filtros Disponibles';
 
         const filtersContainer = document.createElement('div');
-        filtersContainer.className = 'space-y-3';
+        filtersContainer.className = 'space-y-2 sm:space-y-3';
         filtersContainer.id = 'filters-container';
 
         panel.appendChild(title);
         panel.appendChild(filtersContainer);
 
         return panel;
+    }
+
+    /**
+     * Crear panel de filtros (método legacy - mantener para compatibilidad)
+     * @returns {HTMLElement} - Panel de filtros
+     */
+    createFiltersPanel() {
+        return this.createResponsiveFiltersPanel();
     }
 
     /**

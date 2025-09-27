@@ -58,11 +58,73 @@ class CanvasManager {
     }
 
     /**
+     * Establecer dimensiones responsivas del canvas
+     * Principio SOLID: Single Responsibility - Solo se encarga de configurar el canvas responsivo
+     * Principio KISS: Lógica simple y directa para cálculos responsivos
+     */
+    setResponsiveCanvasSize() {
+        const container = this.canvas.parentElement;
+        if (!container) {
+            console.warn('No se encontró contenedor del canvas, usando dimensiones fijas');
+            this.setFixedCanvasSize();
+            return;
+        }
+
+        const containerRect = container.getBoundingClientRect();
+        
+        // Calcular dimensiones responsivas
+        const maxWidth = Math.min(containerRect.width - 32, 800); // 32px padding
+        const maxHeight = Math.min(window.innerHeight * 0.6, 600);
+        
+        // Mantener proporción 4:3 para el canvas
+        const aspectRatio = 4/3;
+        let canvasWidth = maxWidth;
+        let canvasHeight = maxWidth / aspectRatio;
+        
+        if (canvasHeight > maxHeight) {
+            canvasHeight = maxHeight;
+            canvasWidth = maxHeight * aspectRatio;
+        }
+        
+        this.canvas.width = canvasWidth;
+        this.canvas.height = canvasHeight;
+        this.canvas.style.width = `${canvasWidth}px`;
+        this.canvas.style.height = `${canvasHeight}px`;
+        
+        this.clearCanvas();
+        console.log(`Canvas responsivo configurado: ${canvasWidth}x${canvasHeight}`);
+    }
+
+    /**
+     * Configurar redimensionamiento responsivo
+     * Principio SOLID: Single Responsibility - Solo maneja el resize responsivo
+     */
+    setupResponsiveResize() {
+        let resizeTimeout;
+        const handleResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (this.hasImage()) {
+                    this.setResponsiveCanvasSize();
+                    this.drawImageScaledAndCentered(this.imageElement);
+                }
+            }, 250);
+        };
+
+        window.addEventListener('resize', handleResize);
+        
+        // Limpiar listener al destruir
+        this.cleanupResize = () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }
+
+    /**
      * Limpiar canvas completamente
      * Principio SOLID: Single Responsibility - Solo se encarga de limpiar
      */
     clearCanvas() {
-        this.context.clearRect(0, 0, this.fixedCanvasWidth, this.fixedCanvasHeight);
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     /**
@@ -77,6 +139,15 @@ class CanvasManager {
             img.onload = () => {
                 this.imageElement = img;
                 
+                // Configurar canvas responsivo si está disponible
+                if (this.setResponsiveCanvasSize) {
+                    this.setResponsiveCanvasSize();
+                    this.setupResponsiveResize();
+                } else {
+                    // Fallback a dimensiones fijas
+                    this.setFixedCanvasSize();
+                }
+                
                 // Limpiar canvas completamente
                 this.clearCanvas();
                 
@@ -87,7 +158,7 @@ class CanvasManager {
                 this.originalImageData = this.createImageDataFromImage(img);
                 this.currentImageData = this.cloneImageData(this.originalImageData);
                 
-                console.log(`Imagen cargada: ${img.width}x${img.height} en canvas ${this.fixedCanvasWidth}x${this.fixedCanvasHeight}`);
+                console.log(`Imagen cargada: ${img.width}x${img.height} en canvas responsivo`);
                 resolve(img);
             };
             
@@ -110,16 +181,16 @@ class CanvasManager {
     drawImageScaledAndCentered(img) {
         // Calcular dimensiones escaladas que quepan en el canvas
         const scale = Math.min(
-            this.maxDisplayWidth / img.width,
-            this.maxDisplayHeight / img.height
+            this.canvas.width / img.width,
+            this.canvas.height / img.height
         );
         
         const scaledWidth = img.width * scale;
         const scaledHeight = img.height * scale;
         
         // Calcular posición centrada
-        const x = (this.fixedCanvasWidth - scaledWidth) / 2;
-        const y = (this.fixedCanvasHeight - scaledHeight) / 2;
+        const x = (this.canvas.width - scaledWidth) / 2;
+        const y = (this.canvas.height - scaledHeight) / 2;
         
         // Dibujar imagen escalada y centrada
         this.context.drawImage(img, x, y, scaledWidth, scaledHeight);
@@ -236,16 +307,16 @@ class CanvasManager {
         
         // Calcular dimensiones escaladas que quepan en el canvas
         const scale = Math.min(
-            this.maxDisplayWidth / imageData.width,
-            this.maxDisplayHeight / imageData.height
+            this.canvas.width / imageData.width,
+            this.canvas.height / imageData.height
         );
         
         const scaledWidth = imageData.width * scale;
         const scaledHeight = imageData.height * scale;
         
         // Calcular posición centrada
-        const x = (this.fixedCanvasWidth - scaledWidth) / 2;
-        const y = (this.fixedCanvasHeight - scaledHeight) / 2;
+        const x = (this.canvas.width - scaledWidth) / 2;
+        const y = (this.canvas.height - scaledHeight) / 2;
         
         // Dibujar imagen escalada y centrada
         this.context.drawImage(tempCanvas, x, y, scaledWidth, scaledHeight);

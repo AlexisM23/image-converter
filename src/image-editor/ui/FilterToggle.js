@@ -48,7 +48,7 @@ class FilterToggle {
      * @returns {string} - Clases CSS
      */
     getContainerClasses() {
-        const baseClasses = 'flex items-center space-x-3 p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer';
+        const baseClasses = 'flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer';
         const stateClasses = this.filter.enabled 
             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
             : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600';
@@ -80,7 +80,7 @@ class FilterToggle {
      * @returns {string} - Clases CSS
      */
     getIconContainerClasses() {
-        const baseClasses = 'flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-colors';
+        const baseClasses = 'flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full transition-colors';
         const stateClasses = this.filter.enabled 
             ? 'bg-blue-500 text-white' 
             : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400';
@@ -101,7 +101,7 @@ class FilterToggle {
         title.textContent = this.getFilterTitle();
 
         const description = document.createElement('p');
-        description.className = 'text-sm text-gray-500 dark:text-gray-400';
+        description.className = 'text-xs sm:text-sm text-gray-500 dark:text-gray-400';
         description.textContent = this.filter.description;
 
         textContainer.appendChild(title);
@@ -115,7 +115,7 @@ class FilterToggle {
      * @returns {string} - Clases CSS
      */
     getTitleClasses() {
-        const baseClasses = 'font-medium';
+        const baseClasses = 'text-sm sm:text-base font-medium';
         const stateClasses = this.filter.enabled 
             ? 'text-gray-900 dark:text-white' 
             : 'text-gray-700 dark:text-gray-300';
@@ -234,7 +234,7 @@ class FilterToggle {
         this.element.className = this.getContainerClasses();
         
         // Actualizar icono
-        const iconContainer = this.element.querySelector('.w-10');
+        const iconContainer = this.element.querySelector('.w-8, .w-10');
         if (iconContainer) {
             iconContainer.className = this.getIconContainerClasses();
         }
