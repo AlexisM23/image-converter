@@ -1,8 +1,7 @@
 // Carga dinámica (lazy loading) de dependencias pesadas
 let imageCompression = null;
 let ImageWorkerManager = null;
-let tuiImageEditor = null;
-let fabric = null;
+// TOAST UI y Fabric eliminados - ahora usamos sistema nativo
 
 const lazyLoader = {
   async loadImageCompression() {
@@ -19,26 +18,9 @@ const lazyLoader = {
       ImageWorkerManager = module.default;
     }
     return ImageWorkerManager;
-  },
-
-  async loadToastImageEditor() {
-    if (!tuiImageEditor) {
-      if (typeof tui !== 'undefined' && tui.ImageEditor) {
-        tuiImageEditor = tui.ImageEditor;
-      } else {
-        throw new Error('TOAST UI Image Editor no está disponible');
-      }
-    }
-    return tuiImageEditor;
-  },
-
-  async loadFabric() {
-    if (!fabric) {
-      const module = await import('fabric');
-      fabric = module.fabric;
-    }
-    return fabric;
   }
+
+  // Métodos de TOAST UI y Fabric eliminados - ahora usamos sistema nativo
 };
 
 export default lazyLoader;

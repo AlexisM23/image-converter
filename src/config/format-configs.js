@@ -13,6 +13,7 @@ const FORMAT_CONFIGS = {
   'image/png': {
     name: 'PNG',
     extension: 'png',
+    quality: { min: 0, max: 1, default: 1.0 }, // PNG no tiene calidad, pero se usa para compatibilidad
     options: {
       compressionLevel: { label: 'Nivel de compresión', min: 0, max: 9, default: 6 },
       interlaced: { label: 'Entrelazado', default: false }

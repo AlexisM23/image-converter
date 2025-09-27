@@ -20,15 +20,33 @@ const init = async () => {
   elements.moonIcon = document.getElementById('moonIcon');
   elements.sunIcon = document.getElementById('sunIcon');
 
+  // Verificar que los elementos críticos existen
+  console.log('Elementos encontrados:', {
+    fileInput: !!elements.fileInput,
+    dropZone: !!elements.dropZone,
+    formatSelect: !!elements.formatSelect,
+    formatOptions: !!elements.formatOptions
+  });
+
   // Inicializar modo oscuro
   utils.initDarkMode(elements);
+
+  // Inicializar sistema de editor de imágenes nativo (opcional)
+  try {
+    eventHandlers.initializeImageEditor();
+  } catch (error) {
+    console.warn('No se pudo inicializar el sistema de editor:', error);
+  }
 
   // Limpiar memoria al cargar la página
   // (memoryManager.cleanup() se puede llamar aquí si se importa)
 
   // Event listeners para archivos
   elements.fileInput.addEventListener('change', (e) => eventHandlers.handleFileSelect(e, state, elements));
-  elements.dropZone.addEventListener('click', () => elements.fileInput.click());
+  elements.dropZone.addEventListener('click', () => {
+    console.log('DropZone clickeado, abriendo selector de archivos');
+    elements.fileInput.click();
+  });
   elements.dropZone.addEventListener('drop', (e) => eventHandlers.handleDrop(e, state, elements));
   elements.dropZone.addEventListener('dragover', (e) => eventHandlers.handleDragOver(e, elements));
   elements.dropZone.addEventListener('dragleave', (e) => eventHandlers.handleDragLeave(e, elements));
@@ -50,6 +68,10 @@ const init = async () => {
     // memoryManager.cleanup();
     if (state.workerManager) {
       state.workerManager.terminate();
+    }
+    // Limpiar sistema de editor
+    if (eventHandlers.imageEditorSystem) {
+      eventHandlers.imageEditorSystem.destroy();
     }
   });
 

@@ -16,19 +16,7 @@
   
   <title>Convertidor de Imágenes</title>
   <link rel="stylesheet" href="src/style.css">
-  <link rel="stylesheet" href="public/vendor/tui/tui-image-editor.css">
-  <!-- Dependencias de TOAST UI -->
-  <script src="public/vendor/tui/tui-code-snippet.min.js"></script>
-  <script src="public/vendor/tui/tui-color-picker.min.js"></script>
-  <script src="public/vendor/tui/tui-image-editor.js"></script>
-  <script>
-    // Deshabilitar estadísticas de uso y verificar carga de TUI
-    if (typeof tui === 'undefined' || typeof tui.ImageEditor === 'undefined') {
-      throw new Error('FATAL: TOAST UI Image Editor (tui) no se ha cargado.');
-    } else {
-      tui.usageStatistics = false;
-    }
-  </script>
+  <!-- Dependencias de TOAST UI eliminadas - ahora usamos sistema nativo -->
 </head>
 <body>
   <div id="app" class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-300">

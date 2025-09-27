@@ -4,15 +4,35 @@ import lazyLoader from '../core/lazy-loader.js';
 import memoryManager from '../core/memory-manager.js';
 import canvasPool from '../core/canvas-pool.js';
 import FORMAT_CONFIGS from '../config/format-configs.js';
+import { ImageEditorSystem } from '../image-editor/index.js';
 
 // NOTA: Las referencias a estado global (currentFiles, isConverting, currentFormatConfig, etc.)
 // se deben adaptar para futura integración con state.js
 
 const eventHandlers = {
+  // Sistema de editor de imágenes nativo
+  imageEditorSystem: null,
+
+  // Inicializar sistema de editor
+  initializeImageEditor() {
+    if (!this.imageEditorSystem) {
+      this.imageEditorSystem = new ImageEditorSystem();
+      this.imageEditorSystem.initialize();
+      
+      // Configurar callbacks
+      this.imageEditorSystem.configureCallbacks({
+        onSave: this.handleEditorSave.bind(this),
+        onClose: this.handleEditorClose.bind(this)
+      });
+    }
+  },
+
   // Manejar selección de archivo
   async handleFileSelect(event, state, elements) {
+    console.log('handleFileSelect llamado', event.target.files);
     const files = Array.from(event.target.files);
     if (files.length > 0) {
+      console.log('Archivos seleccionados:', files);
       await this.processFiles(files, state, elements);
     }
   },
@@ -175,8 +195,14 @@ const eventHandlers = {
   // Remover archivo con gestión de memoria mejorada
   removeFile(index, state, elements) {
     const file = state.currentFiles[index];
-    if (file && file.previewUrl) {
+    if (file) {
+      // Limpiar contexto del archivo
+      this.clearFileContext(file);
+      
+      // Limpiar URL de preview
+      if (file.previewUrl) {
       memoryManager.revokeObjectURL(file.previewUrl);
+      }
     }
     state.currentFiles.splice(index, 1);
     this.updateFileList(state, elements);
@@ -191,6 +217,10 @@ const eventHandlers = {
   // Remover todas las imágenes con limpieza de memoria
   removeAllImages(state, elements) {
     state.currentFiles.forEach(file => {
+      // Limpiar contexto del archivo
+      this.clearFileContext(file);
+      
+      // Limpiar URL de preview
       if (file.previewUrl) {
         memoryManager.revokeObjectURL(file.previewUrl);
       }
@@ -322,7 +352,8 @@ const eventHandlers = {
         }
       }
       const formatConfig = FORMAT_CONFIGS[targetFormat];
-      const defaultQuality = formatConfig.quality.default / 100;
+      // Manejar formatos que no tienen calidad (como PNG)
+      const defaultQuality = formatConfig.quality ? formatConfig.quality.default / 100 : 1.0;
       const options = {
         maxSizeMB: state.CONFIG.MAX_SIZE_MB,
         maxWidthOrHeight: state.CONFIG.MAX_WIDTH_HEIGHT,
@@ -373,7 +404,8 @@ const eventHandlers = {
       try {
         const file = state.currentFiles[i];
         const formatConfig = FORMAT_CONFIGS[targetFormat];
-        const defaultQuality = formatConfig.quality.default / 100;
+        // Manejar formatos que no tienen calidad (como PNG)
+        const defaultQuality = formatConfig.quality ? formatConfig.quality.default / 100 : 1.0;
         const options = {
           maxSizeMB: state.CONFIG.MAX_SIZE_MB,
           maxWidthOrHeight: state.CONFIG.MAX_WIDTH_HEIGHT,
@@ -504,186 +536,100 @@ const eventHandlers = {
     }, 3000);
   },
 
-  // Editor de imagen con TOAST UI
+  // Editor de imagen nativo (reemplaza TOAST UI)
   async openImageEditor(fileIndex, state, elements) {
     const file = state.currentFiles[fileIndex];
-    if (!file) return;
-    if (typeof tui === 'undefined' || typeof tui.ImageEditor === 'undefined') {
-      console.error('TOAST UI Image Editor no está disponible');
-      utils.showError('Editor de imagen no disponible. Por favor, recarga la página.', elements);
+    if (!file) {
+      utils.showError('Archivo no encontrado', elements);
       return;
     }
-    const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50';
-    modal.id = 'imageEditorModal';
-    const imageUrl = memoryManager.createObjectURL(file);
-    modal.innerHTML = `
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-7xl w-full mx-4 max-h-[95vh] overflow-hidden">
-        <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Editor de Imagen</h3>
-          <div class="flex items-center space-x-2">
-            <button id="saveAndCloseBtn" class="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors" title="Guardar cambios y cerrar editor">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-              </svg>
-            </button>
-            <button id="closeEditor" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div class="relative flex-1" style="height: calc(95vh - 80px);">
-          <div id="tui-image-editor-container" class="w-full h-full bg-gray-50 dark:bg-gray-900"></div>
-        </div>
-      </div>
-    `;
-    console.log('### MODAL ABOUT TO BE APPENDED');
-    document.body.appendChild(modal);
-    console.log('### MODAL APPENDED');
-    await this.initToastImageEditor(fileIndex, imageUrl, state, elements);
-  },
 
-  async initToastImageEditor(fileIndex, imageUrl, state, elements) {
-    const ToastImageEditor = await lazyLoader.loadToastImageEditor();
-    const container = document.getElementById('tui-image-editor-container');
-    if (!container) {
-      console.error('Contenedor del editor no encontrado');
-      return;
-    }
-    const isDarkMode = document.documentElement.classList.contains('dark');
-    const options = {
-      includeUI: {
-        loadImage: {
-          path: imageUrl,
-          name: 'image'
-        },
-        locale: {
-          'Crop': 'Recortar',
-          'Delete-all': 'Eliminar todo',
-          'Flip': 'Voltear',
-          'Rotate': 'Rotar',
-          'Draw': 'Dibujar',
-          'Shape': 'Forma',
-          'Icon': 'Icono',
-          'Text': 'Texto',
-          'Mask': 'Máscara',
-          'Filter': 'Filtro',
-          'Zoom': 'Zoom',
-          'Undo': 'Deshacer',
-          'Redo': 'Rehacer',
-          'Reset': 'Restablecer',
-          'Save': 'Guardar',
-          'Cancel': 'Cancelar'
-        },
-        initMenu: 'filter',
-        menuBarPosition: 'bottom'
-      },
-      cssMaxWidth: 700,
-      cssMaxHeight: 500,
-      selectionStyle: {
-        cornerSize: 20,
-        rotatingPointOffset: 70
-      },
-      usageStatistics: false
-    };
     try {
-      const imageEditor = new ToastImageEditor(container, options);
-      this.editorState = {
-        editor: imageEditor,
-        fileIndex,
-        imageUrl
-      };
-      this.setupToastEventListeners(state, elements);
+      // Inicializar sistema de editor si no está inicializado
+      this.initializeImageEditor();
+      
+      // Almacenar referencia al archivo actual para el callback
+      this.currentEditingFileIndex = fileIndex;
+      this.currentEditingState = state;
+      this.currentEditingElements = elements;
+      
+      // Abrir editor con el archivo
+      await this.imageEditorSystem.openEditor(file);
+      
     } catch (error) {
-      console.error('Error al inicializar TOAST UI Image Editor:', error);
-      utils.showError('Error al cargar el editor de imagen', elements);
+      console.error('Error abriendo editor de imagen:', error);
+      utils.showError('Error al abrir el editor de imagen', elements);
     }
   },
 
-  setupToastEventListeners(state, elements) {
-    document.getElementById('closeEditor').onclick = () => this.closeImageEditor(state, elements);
-    document.getElementById('saveAndCloseBtn').onclick = () => this.applyImageChanges(state, elements);
-    if (this.editorState && this.editorState.editor) {
-      const editor = this.editorState.editor;
-      editor.on('load', () => {
-        console.log('Imagen cargada correctamente en el editor');
-      });
-      editor.on('objectActivated', (props) => {
-        console.log('Objeto activado:', props);
-      });
-      editor.on('objectMoved', (props) => {
-        console.log('Objeto movido:', props);
-      });
-    }
-  },
-
-  closeImageEditor(state, elements) {
-    const modal = document.getElementById('imageEditorModal');
-    if (modal) {
-      if (this.editorState && this.editorState.editor) {
-        this.editorState.editor.destroy();
-      }
-      document.body.removeChild(modal);
-    }
-    if (this.editorState && this.editorState.imageUrl) {
-      memoryManager.revokeObjectURL(this.editorState.imageUrl);
-    }
-    this.editorState = null;
-  },
-
-  applyImageChanges(state, elements) {
-    if (!this.editorState || !this.editorState.editor) {
-      console.error('Editor no disponible');
-      return;
-    }
-    const { editor, fileIndex } = this.editorState;
-    const file = state.currentFiles[fileIndex];
+  // Callback para guardar imagen editada
+  async handleEditorSave(editedBlob, originalFile) {
     try {
-      const dataURL = editor.toDataURL({ format: 'png', quality: 0.9 });
-      this.dataURLToBlob(dataURL)
-        .then(blob => {
-          const newFile = new File([blob], file.name, { type: file.type });
-          state.currentFiles[fileIndex] = newFile;
-          if (file.previewUrl) {
-            memoryManager.revokeObjectURL(file.previewUrl);
-          }
-          this.closeImageEditor(state, elements);
-          this.updateFileList(state, elements);
-          this.showSuccessMessage(state, 0, elements, 'Imagen editada exitosamente');
-        })
-        .catch(error => {
-          console.error('Error al procesar imagen:', error);
-          utils.showError('Error al procesar la imagen editada', elements);
-        });
+      const { currentEditingFileIndex, currentEditingState, currentEditingElements } = this;
+      
+      if (currentEditingFileIndex === undefined || !currentEditingState || !currentEditingElements) {
+        throw new Error('Referencias de edición no encontradas');
+      }
+
+      // Crear nueva URL para la imagen editada
+      const editedUrl = memoryManager.createObjectURL(editedBlob);
+      
+      // Revocar URL anterior si existe
+      const currentFile = currentEditingState.currentFiles[currentEditingFileIndex];
+      if (currentFile.previewUrl) {
+        memoryManager.revokeObjectURL(currentFile.previewUrl);
+      }
+
+      // Crear nuevo archivo con la imagen editada
+      const newFile = new File([editedBlob], currentFile.name, { 
+        type: currentFile.type,
+        lastModified: Date.now()
+      });
+
+      // Actualizar archivo en el estado
+      currentEditingState.currentFiles[currentEditingFileIndex] = newFile;
+      
+      // Crear nueva URL de preview
+      newFile.previewUrl = memoryManager.createObjectURL(newFile);
+
+      // Limpiar contexto del archivo anterior (ya no es necesario)
+      if (this.imageEditorSystem) {
+        const oldFileId = this.imageEditorSystem.getFileContextManager().generateFileId(currentFile);
+        this.imageEditorSystem.clearFileContext(oldFileId);
+      }
+
+      // Actualizar UI
+      this.updateFileList(currentEditingState, currentEditingElements);
+      this.showSuccessMessage(currentEditingState, 0, currentEditingElements, 'Imagen editada exitosamente');
+      
     } catch (error) {
-      console.error('Error al aplicar cambios de imagen:', error);
-      utils.showError('Error al procesar la imagen editada', elements);
+      console.error('Error guardando imagen editada:', error);
+      if (this.currentEditingElements) {
+        utils.showError('Error al guardar los cambios', this.currentEditingElements);
+      }
     }
   },
 
-  dataURLToBlob(dataURL) {
-    return new Promise((resolve, reject) => {
-      try {
-        const base64 = dataURL.split(',')[1];
-        if (!base64) {
-          reject(new Error('Data URL inválida'));
-          return;
-        }
-        const byteCharacters = atob(base64);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: 'image/png' });
-        resolve(blob);
-      } catch (error) {
-        reject(error);
-      }
-    });
+  // Callback para cerrar editor
+  handleEditorClose() {
+    // Limpiar referencias
+    this.currentEditingFileIndex = undefined;
+    this.currentEditingState = null;
+    this.currentEditingElements = null;
   },
+
+  // Limpiar contexto de archivo cuando se elimina
+  clearFileContext(file) {
+    if (this.imageEditorSystem) {
+      const fileId = this.imageEditorSystem.getFileContextManager().generateFileId(file);
+      const removed = this.imageEditorSystem.clearFileContext(fileId);
+      if (removed) {
+        console.log(`Contexto eliminado para archivo: ${file.name}`);
+      }
+    }
+  },
+
+  // Métodos de TOAST UI eliminados - ahora usamos el sistema nativo
 
   // Utilidad para calcular tamaño de imagen
   calculateImageSize(imgWidth, imgHeight, maxWidth, maxHeight) {

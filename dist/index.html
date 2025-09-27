@@ -5,29 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Convertidor de imágenes online - Convierte imágenes a múltiples formatos con configuraciones avanzadas">
   <meta name="theme-color" content="#3b82f6">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://uicdn.toast.com; style-src 'self' 'unsafe-inline' https://uicdn.toast.com data:; img-src 'self' data: blob: https://uicdn.toast.com; connect-src 'self' blob: data:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' data:; img-src 'self' data: blob: https://uicdn.toast.com; connect-src 'self' blob: data:;">
   
   <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" href="/image-converter/favicon.ico">
-  <link rel="shortcut icon" type="image/x-icon" href="/image-converter/favicon.ico">
-  <link rel="apple-touch-icon" href="/image-converter/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href="/image-converter/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/image-converter/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon.ico">
   
-  <title>Convertidor de Imágenes</title>
-  <link rel="stylesheet" href="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.css">
-  <!-- Dependencias de TOAST UI -->
-  <script src="https://uicdn.toast.com/tui.code-snippet/latest/tui-code-snippet.min.js"></script>
-  <script src="https://uicdn.toast.com/tui-color-picker/latest/tui-color-picker.min.js"></script>
-  <script src="https://uicdn.toast.com/tui-image-editor/latest/tui-image-editor.js"></script>
-  <script>
-    // Deshabilitar estadísticas de uso para evitar problemas de CORS
-    if (typeof tui !== 'undefined') {
-      tui.usageStatistics = false;
-    }
-  </script>
-  <script type="module" crossorigin src="/image-converter/assets/js/index-CPvS0yWh.js"></script>
-  <link rel="stylesheet" crossorigin href="/image-converter/assets/index-BIzUewJt.css">
+  <title>Convertidor de Imágenes</title>
+  <!-- Dependencias de TOAST UI eliminadas - ahora usamos sistema nativo -->
+  <script type="module" crossorigin src="/image-converter/assets/js/index-FFMBRB5I.js"></script>
+  <link rel="stylesheet" crossorigin href="/image-converter/assets/index-DZfXG-xI.css">
 </head>
 <body>
   <div id="app" class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4 transition-colors duration-300">
@@ -159,6 +149,6 @@
         </div>
       </div>
     </div>
-  </div>
+  </div>
 </body>
 </html>
